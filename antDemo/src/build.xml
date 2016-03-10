@@ -6,10 +6,12 @@
 
     <!-- 源代码src路径 -->
     <property name="src.path" value="com"/>
-    <!-- 编译文件class路径 -->
-    <property name="build.path" value="build"/>
     <!-- 单元测试代码路径 -->
     <property name="test.path" value="com/test"/>
+    <!-- 编译文件class路径 -->
+    <property name="build.path" value="build"/>
+    <!-- jar包路径 -->
+    <property name="dist.path" value="dist"/>
     <!-- lib包路径 -->
     <property name="lib.path" value="lib"/>
     <!-- 生成报告junit4.xml路径 -->
@@ -26,24 +28,28 @@
         <pathelement path="${build.path}"/>
     </path>     
 
-    <target name="init">
+    <!-- 初始化 -->
+    <target name="init">        
         <mkdir dir="${build.path}"/>
         <mkdir dir="${report.path}"/>
+        <mkdir dir="${dist.path}"/>
     </target>
     
     <!-- =================================================================== -->
     <!-- 清除历史编译class -->
     <!-- =================================================================== -->
-    <target name="clean" description="clean">
+    <target name="clean" description="clean">        
         <delete dir="${build.path}"/>
+        <delete dir="${report.path}"/>
+        <delete dir="${dist.path}"/>
     </target>
 
     <!-- =================================================================== -->
     <!-- 编译测试文件，初始化目录 -->
     <!-- =================================================================== -->
-    <target name="compile" depends="init" description="compile">
-        <javac srcdir="${src.path}" destdir="${build.path}"  classpathref="compile.path"/>
-        <javac srcdir="${test.path}" destdir="${build.path}"  classpathref="compile.path"/>
+    <target name="compile" depends="init">
+        <javac srcdir="${src.path}" destdir="${build.path}"  classpathref="compile.path" includeantruntime="true"/>
+        <javac srcdir="${test.path}" destdir="${build.path}"  classpathref="compile.path" includeantruntime="true"/>
     </target>      
          
     <!-- =================================================================== -->
@@ -60,25 +66,28 @@
                     <include name="**/*Test.class"/>
                 </fileset>
             </batchtest>                 
-         </junit>
-        
+         </junit>        
+     </target>
+    
+    <target name="junit-report" depends="junit">        
         <!-- 产生单元测试报表文档 -->
         <junitreport todir="${report.path}">
             <fileset dir="${report.path}">
                 <include name="TEST-*.xml" />
             </fileset>
+            
             <report format="frames" todir="${report.path}" />
         </junitreport>
-
-     </target>
-
-    <!-- 清除Junit生成的报表文档 -->
-    <target name="run-test">
-        <delete dir="${report.path}"/>
     </target>
-     
-    <target name="if-success" depends="run-test">
-        <echo>运行单元测试成功后执行的！</echo>
-    </target>
+
+    <target name="make-jar" depends="compile" description="make jar file">
+          <jar jarfile="${dist.path}/AntDemo.jar">
+               <fileset dir="${build.path}">
+
+                <!--除去test文件-->
+                <exclude name="**/*Test.class"/>
+               </fileset>
+          </jar>
+     </target>    
     
 </project>
